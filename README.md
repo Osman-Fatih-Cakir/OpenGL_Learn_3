@@ -1,0 +1,4 @@
+- Using texture map for diffuse map and specular map
+- Directional light
+- Point light (with attenuation)
+- Spot light
