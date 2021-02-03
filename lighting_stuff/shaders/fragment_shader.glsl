@@ -32,9 +32,9 @@ struct Light
 uniform Light light;
 
 // light_mode:
-// 1 - Directional
-// 2 - Point
-// 3 - Spotlight
+// 0 - Directional
+// 1 - Point
+// 2 - Spotlight
 uniform int light_mode;
 
 out vec4 out_color;

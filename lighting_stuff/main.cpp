@@ -233,6 +233,9 @@ void keyboard(unsigned char key, int x, int y)
 	{
 		case 'k':
 			light_mode = (light_mode + 1) % 3;
+			if (light_mode == 0) std::cout << "Directional light" << std::endl;
+			else if (light_mode == 1) std::cout << "Point light" << std::endl;
+			else if (light_mode == 2) std::cout << "Spot light" << std::endl;
 			glutPostRedisplay();
 			break;
 	}
@@ -414,7 +417,6 @@ void draw_cubes()
 		GLuint normal_matrix_loc = glGetUniformLocation(shader_program, "normal_matrix");
 		glUniformMatrix4fv(normal_matrix_loc, 1, GL_FALSE, &normal_matrix[0][0]);
 
-		std::cout << glGetError() << std::endl;
 		glBindVertexArray(cubeVAOs[i]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0); // Prevent further modifications
