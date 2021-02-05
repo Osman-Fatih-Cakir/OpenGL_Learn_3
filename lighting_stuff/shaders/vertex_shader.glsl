@@ -16,8 +16,9 @@ out vec2 ftexCoord;
 void main()
 {
 	fNormal = mat3(normal_matrix) * vNormal;  // Multiply with normal matrix (in case of non-uniform scaling)
-	fPos = vec3((view * model) * vec4(position, 1.0f));
+	fPos = vec3((model) * vec4(position, 1.0f));
 	ftexCoord = vtexCoord;
 
 	gl_Position = projection * view * model * vec4(position, 1.0f);
 }
+

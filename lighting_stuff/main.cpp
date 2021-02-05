@@ -149,10 +149,11 @@ GLfloat cube_texture_coord[] = {
 std::vector<GLuint> cubeVAOs;
 std::vector<mat4> models;
 
-vec3 eye, up;
+vec3 eye = vec3(0.f, 0.f, 23.f);
+vec3 up = vec3(0.f, 1.f, 0.f);
 mat4 projection, view;
-vec3 light_pos = vec3(11.f, 11.f, 0.f);
-vec3 light_ambient = vec3(0.1f, 0.1f, 0.1f);
+vec3 light_pos = vec3(11.f, 11.f, 2.f);
+vec3 light_ambient = vec3(0.05f, 0.05f, 0.05f);
 vec3 light_diffuse = vec3(1.0f, 1.0f, 1.0f);
 vec3 light_specular = vec3(1.0f, 1.0f, 1.0f);
 
@@ -165,7 +166,7 @@ vec3 light_dir;
 float light_cutoff = glm::cos(glm::radians(12.5f));
 float light_out_cutoff = glm::cos(glm::radians(17.5f));
 
-int light_mode = 2;
+int light_mode = 0;
 
 GLuint shader_program;
 GLuint view_loc, projection_loc;
@@ -236,9 +237,29 @@ void keyboard(unsigned char key, int x, int y)
 			if (light_mode == 0) std::cout << "Directional light" << std::endl;
 			else if (light_mode == 1) std::cout << "Point light" << std::endl;
 			else if (light_mode == 2) std::cout << "Spot light" << std::endl;
-			glutPostRedisplay();
+			break;
+		case 'w':
+			eye = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(-1.f, 0.f, 0.f)) * vec4(eye, 1.f);
+			up = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(-1.f, 0.f, 0.f)) * vec4(up, 1.f);
+			view = glm::lookAt(eye, vec3(0.0f, 0.0f, 0.0f), up);
+			break;
+		case 's':
+			eye = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(1.f, 0.f, 0.f)) * vec4(eye, 1.f);
+			up = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(1.f, 0.f, 0.f)) * vec4(up, 1.f);
+			view = glm::lookAt(eye, vec3(0.0f, 0.0f, 0.0f), up);
+			break;
+		case 'a':
+			eye = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(0.f, -1.f, 0.f)) * vec4(eye, 1.f);
+			up = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(0.f, -1.f, 0.f)) * vec4(up, 1.f);
+			view = glm::lookAt(eye, vec3(0.0f, 0.0f, 0.0f), up);
+			break;
+		case 'd':
+			eye = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(0.f, 1.f, 0.f)) * vec4(eye, 1.f);
+			up = glm::rotate(mat4(1.f), glm::radians(15.f), vec3(0.f, 1.f, 0.f)) * vec4(up, 1.f);
+			view = glm::lookAt(eye, vec3(0.0f, 0.0f, 0.0f), up);
 			break;
 	}
+	glutPostRedisplay();
 }
 
 GLuint load_texture(const char* path)
@@ -276,7 +297,8 @@ GLuint load_texture(const char* path)
 
 void init()
 {
-	std::cout << "Press \"k\" to see different lights" << std::endl;
+	std::cout << "Use 'WASD' keys for rotate." << std::endl;
+	std::cout << "Press 'k' to see different lights." << std::endl;
 	init_camera();
 	init_shaders();
 	init_light();
@@ -294,13 +316,10 @@ void init_shaders()
 void init_camera()
 {
 	// Initialize viewing values
-	//eye = vec3(-2.f, 0.f, 3.f);
-	eye = vec3(0.f, 0.f, 23.f);
-	up = vec3(0.f, 1.f, 0.f);
 	projection = glm::perspective(glm::radians(60.0f), (float)800 / 800, 0.1f, 1000.0f);
 	view = glm::lookAt(eye, vec3(0.0f, 0.0f, 0.0f), up);
 
-	light_dir = eye - vec3(0.0f, 0.0f, 0.0f);
+	light_dir = eye - vec3(0.f); // Spot light direction is center to eye
 }
 
 void init_light()
@@ -310,7 +329,7 @@ void init_light()
 	view_loc = glGetUniformLocation(shader_program, "view");
 
 	// Lighting values
-	eye_loc = glGetUniformLocation(shader_program, "eye_pos");
+	eye_loc = glGetUniformLocation(shader_program, "eye");
 	diffuse_loc = glGetUniformLocation(shader_program, "material.diffuse");
 	specular_loc = glGetUniformLocation(shader_program, "material.specular");
 	shininess_loc = glGetUniformLocation(shader_program, "material.shininess");
@@ -413,7 +432,7 @@ void draw_cubes()
 		glUniformMatrix4fv(model_loc, 1, GL_FALSE, &(models[i])[0][0]);
 
 		// Normal matrix
-		mat4 normal_matrix = inverse(transpose(view * models[i]));
+		mat4 normal_matrix = inverse(transpose(models[i]));
 		GLuint normal_matrix_loc = glGetUniformLocation(shader_program, "normal_matrix");
 		glUniformMatrix4fv(normal_matrix_loc, 1, GL_FALSE, &normal_matrix[0][0]);
 
@@ -433,4 +452,8 @@ void render()
 	draw_cubes();
 
 	glutSwapBuffers();
+
+	// Error catch
+	GLuint err = glGetError();
+	if (err) fprintf(stderr, "%s\n", gluErrorString(err));
 }

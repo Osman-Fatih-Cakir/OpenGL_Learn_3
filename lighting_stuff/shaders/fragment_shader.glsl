@@ -49,12 +49,12 @@ void main(void)
 	if (light_mode == 0)
 	{
 		// Ambient
-		ambient = light.ambient * vec3(texture(material.diffuse, ftexCoord));
+		ambient = ambient = light.ambient * vec3(texture(material.diffuse, ftexCoord));
 
 		// Normal
 		vec3 norm = normalize(fNormal);
 
-		vec3 light_dir = normalize(vec3(0.0, 0.0, 5.0));
+		vec3 light_dir = normalize(light.direction);
 
 		// Diffuse
 		float diff = max(dot(norm, light_dir), 0.0);
@@ -63,7 +63,7 @@ void main(void)
 		// Specular
 		vec3 view_dir = normalize(eye - fPos);
 		vec3 reflect_dir = reflect(-light_dir, norm);
-		// vec3 reflect_dir = normalize(2*dot(light_dir,norm)*norm-light_dir); // Half vector
+
 		// Calculating the reflection direction for each fragment is heavy, so we can use half vector (Blinn-Phong Lighting Model)
 		float spec = pow(max(dot(view_dir, reflect_dir), 0.0), material.shininess);
 		specular = spec * light.specular * vec3(texture(material.specular, ftexCoord));
@@ -92,12 +92,10 @@ void main(void)
 		// Specular
 		vec3 view_dir = normalize(eye - fPos);
 		vec3 reflect_dir = reflect(-light_dir, norm);
-		// vec3 reflect_dir = normalize(2*dot(light_dir,norm)*norm-light_dir); // Half vector
-		// Calculating the reflection direction for each fragment is heavy, so we can use half vector (Blinn-Phong Lighting Model)
 		float spec = pow(max(dot(view_dir, reflect_dir), 0.0), material.shininess);
 		specular = spec * light.specular * vec3(texture(material.specular, ftexCoord));
 
-		ambient  *= attenuation; 
+		ambient  *= attenuation;
 		diffuse  *= attenuation;
 		specular *= attenuation;
 	}
@@ -105,15 +103,14 @@ void main(void)
 	// Spotlight
 	else if (light_mode == 2)
 	{
-		vec3 _light_position = eye;
-		vec3 light_dir = normalize(_light_position - fPos);
+		// Ambient
+		ambient = light.ambient * vec3(texture(material.diffuse, ftexCoord));
 
-		float theta = dot(light_dir, normalize(light.direction));
-		float epsilon = light.cutoff - light.out_cutoff;
-		float intensity = clamp((theta - light.out_cutoff) / epsilon, 0.0, 1.0);
-		
 		// Normal
 		vec3 norm = normalize(fNormal);
+
+		vec3 light_dir = normalize(eye - fPos);
+
 		// Diffuse
 		float diff = max(dot(norm, light_dir), 0.0);
 		diffuse = light.diffuse * diff * vec3(texture(material.diffuse, ftexCoord));
@@ -121,16 +118,15 @@ void main(void)
 		// Specular
 		vec3 view_dir = normalize(eye - fPos);
 		vec3 reflect_dir = reflect(-light_dir, norm);
-		// vec3 reflect_dir = normalize(2*dot(light_dir,norm)*norm-light_dir); // Half vector
-		// Calculating the reflection direction for each fragment is heavy, so we can use half vector (Blinn-Phong Lighting Model)
 		float spec = pow(max(dot(view_dir, reflect_dir), 0.0), material.shininess);
 		specular = spec * light.specular * vec3(texture(material.specular, ftexCoord));
 
-		specular *= intensity;
-		diffuse *= intensity;
+		float theta = dot(light_dir, normalize(light.direction));
+		float epsilon = light.cutoff - light.out_cutoff;
+		float intensity = clamp((theta - light.out_cutoff) / epsilon, 0.0, 1.0);
 
-		// Ambient
-		ambient = light.ambient * vec3(texture(material.diffuse, ftexCoord));
+		diffuse *= intensity;
+		specular *= intensity;
 	}
 	
 	vec3 result = (ambient + diffuse + specular);
