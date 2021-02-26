@@ -1,3 +1,6 @@
+NOTE: In order to run the project, you have to change the solution platform to x86
+
+In this project I implemented:
 - Using texture map for diffuse map and specular map
 - Directional light
 - Point light (with attenuation)
